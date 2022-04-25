@@ -10,6 +10,18 @@ exports.Adopcion = (0, express_1.Router)();
 exports.Adopcion.post('/createAdopcion', function (req, res) {
     Adopcion_1.default.instance.createAdopcion(req, res);
 });
+exports.Adopcion.put('/aprobarAdopcionAUsuario', function (req, res) {
+    Adopcion_1.default.instance.aprobarAdopcionAUsuario(req, res);
+});
+exports.Adopcion.put('/notificacionVistaUsuario', function (req, res) {
+    Adopcion_1.default.instance.notificacionVistaUsuario(req, res);
+});
+exports.Adopcion.get('/getAdopcionByMascotaId', function (req, res) {
+    Adopcion_1.default.instance.getAdopcionByMascotaId(req, res);
+});
+exports.Adopcion.get('/getAdopcionByUsuarioId', function (req, res) {
+    Adopcion_1.default.instance.getAdopcionByUsuarioId(req, res);
+});
 // Adopcion.put('/editarAlbum', function (req, res) { // TODO: Seguridad de endpoint
 //     // controller.instance.updateAlbum(req, res)
 // });

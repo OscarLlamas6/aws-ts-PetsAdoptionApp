@@ -11,7 +11,127 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequalize_1 = require("../sequalize");
 const Adopcion_1 = require("../models/Adopcion");
+const Mascota_1 = require("../models/Mascota");
+const Usuario_1 = require("../models/Usuario");
 class AlbumController {
+    //Este endpoint trae los adopciones y usuarios que se postularon a adoptar a la mascota
+    getAdopcionByUsuarioId(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transaction = yield sequalize_1.sequelize.transaction();
+            try {
+                let { IdUsuario } = req.query;
+                let adopciones = yield Adopcion_1.Adopcion.findAll({
+                    where: {
+                        IdUsuario: IdUsuario
+                    },
+                    include: [
+                        {
+                            model: Mascota_1.Mascota
+                        }
+                    ],
+                    transaction: transaction
+                });
+                yield transaction.commit();
+                return res.status(201).send({ error: false, message: '', result: adopciones });
+            }
+            catch (error) {
+                yield transaction.rollback();
+                return res.status(500).send({ error: true, message: error.message });
+            }
+        });
+    }
+    //Este endpoint trae los adopciones y usuarios que se postularon a adoptar a la mascota
+    getAdopcionByMascotaId(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transaction = yield sequalize_1.sequelize.transaction();
+            try {
+                let { IdMascota } = req.query;
+                let adopciones = yield Adopcion_1.Adopcion.findAll({
+                    where: {
+                        IdMascota: IdMascota
+                    },
+                    include: [
+                        {
+                            model: Usuario_1.Usuario,
+                            attributes: ['userName', 'nombre', 'linkFotoPerfil']
+                        }
+                    ],
+                    transaction: transaction
+                });
+                yield transaction.commit();
+                return res.status(201).send({ error: false, message: '', result: adopciones });
+            }
+            catch (error) {
+                yield transaction.rollback();
+                return res.status(500).send({ error: true, message: error.message });
+            }
+        });
+    }
+    //Este endpoint sirve para bajar la bandera de notificacion de que el usuario fue elegido para adoptar a la mascota
+    notificacionVistaUsuario(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transaction = yield sequalize_1.sequelize.transaction();
+            try {
+                let { idAdopcion } = req.body;
+                yield Adopcion_1.Adopcion.update({
+                    notificado: true
+                }, {
+                    where: {
+                        id: idAdopcion
+                    },
+                    transaction: transaction
+                });
+                yield transaction.commit();
+                return res.status(201).send({ error: false, message: '', result: true });
+            }
+            catch (error) {
+                yield transaction.rollback();
+                return res.status(500).send({ error: true, message: error.message });
+            }
+        });
+    }
+    //Este endpoint sirve para que el admin le asigne a un usuario la adopcion
+    aprobarAdopcionAUsuario(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let transaction = yield sequalize_1.sequelize.transaction();
+            try {
+                let { IdUsuario, IdMascota } = req.body;
+                let mascotaFounded = yield Mascota_1.Mascota.findOne({
+                    where: {
+                        id: IdMascota
+                    },
+                    transaction: transaction
+                });
+                if (!mascotaFounded)
+                    throw new Error("No se encontro la mascota");
+                if (mascotaFounded.estado && mascotaFounded.estado == 'adoptado')
+                    throw new Error("Esta mascota ya se adopto");
+                yield Adopcion_1.Adopcion.update({
+                    elegido: true
+                }, {
+                    where: {
+                        IdUsuario: IdUsuario,
+                        IdMascota: IdMascota,
+                    },
+                    transaction: transaction
+                });
+                yield Mascota_1.Mascota.update({
+                    estado: 'adoptado'
+                }, {
+                    where: {
+                        id: IdMascota
+                    },
+                    transaction: transaction
+                });
+                yield transaction.commit();
+                return res.status(201).send({ error: false, message: 'Se actualizo adopción y estado de la mascota', result: true });
+            }
+            catch (error) {
+                yield transaction.rollback();
+                return res.status(500).send({ error: true, message: error.message });
+            }
+        });
+    }
     createAdopcion(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             let transaction = yield sequalize_1.sequelize.transaction();

@@ -15,6 +15,14 @@ Adopcion.put('/notificacionVistaUsuario', function (req, res) { // TODO: Segurid
     controller.instance.notificacionVistaUsuario(req, res)
 });
 
+Adopcion.get('/getAdopcionByMascotaId', function (req, res) { // TODO: Seguridad de endpoint
+    controller.instance.getAdopcionByMascotaId(req, res)
+});
+
+Adopcion.get('/getAdopcionByUsuarioId', function (req, res) { // TODO: Seguridad de endpoint
+    controller.instance.getAdopcionByUsuarioId(req, res)
+});
+
 // Adopcion.put('/editarAlbum', function (req, res) { // TODO: Seguridad de endpoint
 //     // controller.instance.updateAlbum(req, res)
 // });

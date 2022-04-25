@@ -18,6 +18,6 @@ exports.sequelize = new sequelize_typescript_1.Sequelize({
     dialect: 'mysql',
     timezone: '-06:00',
     sync: {
-        alter: true,
+        alter: false,
     }
 });

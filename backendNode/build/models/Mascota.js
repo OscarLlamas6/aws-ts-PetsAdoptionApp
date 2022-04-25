@@ -30,6 +30,9 @@ __decorate([
     (0, sequelize_typescript_1.Column)({ allowNull: false, type: sequelize_typescript_1.DataType.STRING })
 ], Mascota.prototype, "linkFotoPerfil", void 0);
 __decorate([
+    (0, sequelize_typescript_1.Column)({ allowNull: false, type: sequelize_typescript_1.DataType.STRING, defaultValue: '' })
+], Mascota.prototype, "descripcion", void 0);
+__decorate([
     sequelize_typescript_1.CreatedAt,
     (0, sequelize_typescript_1.Column)({ allowNull: false, type: sequelize_typescript_1.DataType.DATE })
 ], Mascota.prototype, "createdAt", void 0);

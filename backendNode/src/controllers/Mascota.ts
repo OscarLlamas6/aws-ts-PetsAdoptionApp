@@ -7,12 +7,105 @@ export default class MascotaController {
 
     static instance = new MascotaController()
 
-    async getMascotas(req: any, res: any) {
+    async getMascotaDescriptionAudio(req: any, res: any) {
+        let transaction = await sequelize.transaction()
+
+        try {
+            let {
+                MascotaId
+            } = req.query
+
+            let mascota: Mascota | null = await Mascota.findOne({
+                where: {
+                    id: MascotaId
+                },
+                transaction: transaction
+            })
+
+            let audio;
+            if (mascota && mascota.descripcion) {
+                audio = await AwsService.instance.getAudioFromText(mascota.descripcion)
+            }
+
+            await transaction.commit()
+            return res.status(201).send({ error: false, message: '', audio: audio });
+        } catch (error: any) {
+            await transaction.rollback()
+            return res.status(500).send({ error: true, message: error.message });
+        }
+    }
+
+    async traducirMascotaDescription(req: any, res: any) {
+        let transaction = await sequelize.transaction()
+
+        try {
+            let {
+                MascotaId,
+                Idioma
+            } = req.query
+
+            let mascota: Mascota | null = await Mascota.findOne({
+                where: {
+                    id: MascotaId
+                },
+                transaction: transaction
+            })
+
+            let traduccion;
+            if (mascota && mascota.descripcion) {
+                traduccion = await AwsService.instance.translate(Idioma, mascota.descripcion)
+            }
+
+            await transaction.commit()
+            return res.status(201).send({ error: false, message: '', traduccion: traduccion });
+        } catch (error: any) {
+            await transaction.rollback()
+            return res.status(500).send({ error: true, message: error.message });
+        }
+    }
+
+    async getMascotaTags(req: any, res: any) {
+        let transaction = await sequelize.transaction()
+        try {
+            let {
+                MascotaId
+            } = req.query
+
+            let mascota: Mascota | null = await Mascota.findOne({
+                where: {
+                    id: MascotaId
+                },
+                transaction: transaction
+            })
+
+            let tags;
+            if (mascota && mascota.linkFotoPerfil) {
+                //se hace un split de la ruta de la foto de perfil
+                let linkFotoPerfil: string[] = mascota.linkFotoPerfil.split('/')
+
+                if (linkFotoPerfil.length == 0) throw new Error("No se pudo extraer tags de la imagen");
+
+                //aqui se hace el path con el cual rekognition ira a buscar la imagen al bucket -> fotosPerfil/imagen.jpg
+                let pathFotoPerfil = `${linkFotoPerfil[linkFotoPerfil.length - 2]}/${linkFotoPerfil[linkFotoPerfil.length - 1]}`
+
+                //metodo para comparar imagenes, recibe como parametros el path de la foto de perfil y aparte la foto en bytes de la foto que se toma en el momento de hacer login
+                tags = await AwsService.instance.getTagsImagen(pathFotoPerfil, false)
+            }
+
+            await transaction.commit()
+            return res.status(201).send({ error: false, message: '', result: mascota, tags: tags });
+        } catch (error: any) {
+            await transaction.rollback()
+            return res.status(500).send({ error: true, message: error.message });
+        }
+    }
+
+    async getMascotasEnAdopcion(req: any, res: any) {
         let transaction = await sequelize.transaction()
         try {
             let params = req.params
 
-            let fotos: Mascota[] | null = await Mascota.findAll({
+            let mascotas: Mascota[] | null = await Mascota.findAll({
                 where: {
                     estado: {
                         [Op.ne]: 'adoptado'
@@ -22,7 +115,7 @@ export default class MascotaController {
             })
 
             await transaction.commit()
-            return res.status(201).send({ error: false, message: 'Se encontró el album', result: fotos });
+            return res.status(201).send({ error: false, message: '', result: mascotas });
         } catch (error: any) {
             await transaction.rollback()
             return res.status(500).send({ error: true, message: error.message });
@@ -38,6 +131,7 @@ export default class MascotaController {
                 tipo,
                 sexo,
                 Base64FotoPerfil,
+                descripcion
             } = req.body
 
             let linkFotoS3;
@@ -49,7 +143,8 @@ export default class MascotaController {
                 tipo: tipo,
                 sexo: sexo,
                 estado: 'en adopcion',
-                linkFotoPerfil: linkFotoS3 && linkFotoS3.Location ? linkFotoS3.Location : ''
+                linkFotoPerfil: linkFotoS3 && linkFotoS3.Location ? linkFotoS3.Location : '',
+                descripcion: descripcion
             },
                 { transaction: transaction }
             )

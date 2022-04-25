@@ -18,6 +18,6 @@ export const sequelize = new Sequelize({
     dialect: 'mysql',
     timezone: '-06:00',
     sync: {
-        alter: true,
+        alter: false,
     }
 });

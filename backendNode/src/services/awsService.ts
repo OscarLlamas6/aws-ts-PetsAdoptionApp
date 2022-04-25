@@ -20,9 +20,42 @@ const translate = new AWS.Translate({
     secretAccessKey: 'rPFkbghNghGq3J7yb7mDQ1YseDoFgzxDdB4vXNiJ',
 })
 
+const polly = new AWS.Polly({
+    accessKeyId: 'AKIAYGZNMTQHJ5IDNDGM',
+    secretAccessKey: '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',
+})
+
 export default class AwsService {
 
     static instance = new AwsService()
+
+    getAudioFromText = async (text: any) => {
+        var params = {
+            OutputFormat: "mp3",
+            SampleRate: "8000",
+            Text: text,
+            TextType: "text",
+            VoiceId: "Joanna",
+            LanguageCode: "es-ES"
+        };
+
+        let audio = await polly.synthesizeSpeech(
+            {
+                OutputFormat: "mp3",
+                SampleRate: "8000",
+                Text: text,
+                TextType: "text",
+                VoiceId: "Lucia",
+                LanguageCode: "es-ES"
+            }
+        ).promise()
+
+        if (audio && audio.AudioStream) {
+            return audio.AudioStream.toString('base64')
+        }
+
+        return null
+    }
 
     translate = async (idioma: any, text: any) => {
 

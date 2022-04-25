@@ -28,8 +28,34 @@ const translate = new aws_sdk_1.default.Translate({
     accessKeyId: 'AKIAYGZNMTQHDXEPRQW5',
     secretAccessKey: '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',
 });
+const polly = new aws_sdk_1.default.Polly({
+    accessKeyId: 'AKIAYGZNMTQHJ5IDNDGM',
+    secretAccessKey: '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',
+});
 class AwsService {
     constructor() {
+        this.getAudioFromText = (text) => __awaiter(this, void 0, void 0, function* () {
+            var params = {
+                OutputFormat: "mp3",
+                SampleRate: "8000",
+                Text: text,
+                TextType: "text",
+                VoiceId: "Joanna",
+                LanguageCode: "es-ES"
+            };
+            let audio = yield polly.synthesizeSpeech({
+                OutputFormat: "mp3",
+                SampleRate: "8000",
+                Text: text,
+                TextType: "text",
+                VoiceId: "Lucia",
+                LanguageCode: "es-ES"
+            }).promise();
+            if (audio && audio.AudioStream) {
+                return audio.AudioStream.toString('base64');
+            }
+            return null;
+        });
         this.translate = (idioma, text) => __awaiter(this, void 0, void 0, function* () {
             let tranduccion = yield translate.translateText({
                 Text: text,

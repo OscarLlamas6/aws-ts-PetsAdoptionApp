@@ -2,10 +2,68 @@ import { sequelize } from '../sequalize'
 import { Op } from 'sequelize';
 import { Adopcion } from '../models/Adopcion';
 import { Mascota } from '../models/Mascota';
+import { Usuario } from '../models/Usuario';
 
 export default class AlbumController {
 
     static instance = new AlbumController()
+
+    //Este endpoint trae los adopciones y usuarios que se postularon a adoptar a la mascota
+    async getAdopcionByUsuarioId(req: any, res: any) {
+        let transaction = await sequelize.transaction()
+        try {
+            let {
+                IdUsuario
+            } = req.query
+
+            let adopciones: Adopcion[] = await Adopcion.findAll({
+                where: {
+                    IdUsuario: IdUsuario
+                },
+                include: [
+                    {
+                        model: Mascota
+                    }
+                ],
+                transaction: transaction
+            })
+
+            await transaction.commit()
+            return res.status(201).send({ error: false, message: '', result: adopciones });
+        } catch (error: any) {
+            await transaction.rollback()
+            return res.status(500).send({ error: true, message: error.message });
+        }
+    }
+
+    //Este endpoint trae los adopciones y usuarios que se postularon a adoptar a la mascota
+    async getAdopcionByMascotaId(req: any, res: any) {
+        let transaction = await sequelize.transaction()
+        try {
+            let {
+                IdMascota
+            } = req.query
+
+            let adopciones: Adopcion[] = await Adopcion.findAll({
+                where: {
+                    IdMascota: IdMascota
+                },
+                include: [
+                    {
+                        model: Usuario,
+                        attributes: ['userName', 'nombre', 'linkFotoPerfil']
+                    }
+                ],
+                transaction: transaction
+            })
+
+            await transaction.commit()
+            return res.status(201).send({ error: false, message: '', result: adopciones });
+        } catch (error: any) {
+            await transaction.rollback()
+            return res.status(500).send({ error: true, message: error.message });
+        }
+    }
 
     //Este endpoint sirve para bajar la bandera de notificacion de que el usuario fue elegido para adoptar a la mascota
     async notificacionVistaUsuario(req: any, res: any) {
@@ -27,7 +85,7 @@ export default class AlbumController {
             )
 
             await transaction.commit()
-            return res.status(201).send({ error: false, message: 'Se actualizo adopción y estado de las mascota', result: true });
+            return res.status(201).send({ error: false, message: '', result: true });
         } catch (error: any) {
             await transaction.rollback()
             return res.status(500).send({ error: true, message: error.message });
@@ -42,6 +100,17 @@ export default class AlbumController {
                 IdUsuario,
                 IdMascota
             } = req.body
+
+            let mascotaFounded: Mascota | null = await Mascota.findOne({
+                where: {
+                    id: IdMascota
+                },
+                transaction: transaction
+            })
+
+            if (!mascotaFounded) throw new Error("No se encontro la mascota");
+            if (mascotaFounded.estado && mascotaFounded.estado == 'adoptado') throw new Error("Esta mascota ya se adopto");
+
 
             await Adopcion.update({
                 elegido: true
@@ -67,7 +136,7 @@ export default class AlbumController {
             )
 
             await transaction.commit()
-            return res.status(201).send({ error: false, message: 'Se actualizo adopción y estado de las mascota', result: true });
+            return res.status(201).send({ error: false, message: 'Se actualizo adopción y estado de la mascota', result: true });
         } catch (error: any) {
             await transaction.rollback()
             return res.status(500).send({ error: true, message: error.message });

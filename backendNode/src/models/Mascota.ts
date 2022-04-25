@@ -9,6 +9,7 @@ interface Attributes {
     sexo: string;
     estado: string;
     linkFotoPerfil: string;
+    descripcion: string;
     adopciones?: Adopcion[]
 }
 
@@ -36,6 +37,9 @@ export class Mascota extends Model<Mascota, Attributes> {
 
     @Column({ allowNull: false, type: DataType.STRING })
     linkFotoPerfil!: string;
+
+    @Column({ allowNull: false, type: DataType.STRING, defaultValue: '' })
+    descripcion!: string;
 
     // Fechas de registro
     @CreatedAt
