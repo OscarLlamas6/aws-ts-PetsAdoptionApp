@@ -1,6 +1,6 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import "../css/style.css"
-import {Navbar,Nav,Container,Tab,Tabs,Carousel,Button,Modal,ListGroup,Form,Badge} from "react-bootstrap";
+import { Navbar, Nav, Container, Tab, Tabs, Carousel, Button, Modal, ListGroup, Form, Badge } from "react-bootstrap";
 import http from '../libs/http'
 import globals from '../utilities/globals'
 
@@ -21,12 +21,13 @@ class Homeusuario extends Component {
         traduccion: "",
         audio64: "",
         notificaciones: [],
-        tagsanimal: []
+        tagsanimal: [],
+        audio: ''
     }
 
-    handleChange=async e=>{
+    handleChange = async e => {
         await this.setState({
-            ...this.state,[e.target.name]: e.target.value
+            ...this.state, [e.target.name]: e.target.value
         });
     }
 
@@ -41,13 +42,14 @@ class Homeusuario extends Component {
             estadoan: "",
             linkfan: "",
             descan: "",
-            traduccion: ""
+            traduccion: "",
+            audio: ""
         })
     }
 
-    componentDidMount(){
+    componentDidMount() {
         if (window.localStorage.getItem("rol") !== "user") {
-            window.location.href="./"
+            window.location.href = "./"
         }
         this.setState({
             fotoperfil: window.localStorage.getItem("linkFotoPerfil"),
@@ -59,10 +61,10 @@ class Homeusuario extends Component {
 
     CerrarSesion() {
         window.localStorage.clear()
-        window.location.href="./"
+        window.location.href = "./"
     }
 
-    GetAnimales=async()=>{
+    GetAnimales = async () => {
         let req = await http.get(`${globals.enlace}/mascota/getMascotasEnAdopcion`)
         if (req.error) {
             alert(req.message)
@@ -73,7 +75,7 @@ class Homeusuario extends Component {
         }
     }
 
-    DetalleMascota=async(id,nombre,raza,tipo,sexo,estado,linkFotoPerfil,descripcion)=>{
+    DetalleMascota = async (id, nombre, raza, tipo, sexo, estado, linkFotoPerfil, descripcion) => {
         this.setState({
             show: true,
             idan: id,
@@ -83,9 +85,9 @@ class Homeusuario extends Component {
             sexoan: sexo,
             estadoan: estado,
             linkfan: linkFotoPerfil,
-            descan: descripcion
+            descan: descripcion,
         })
-        let req = await http.post(`https://whf162fdv4.execute-api.us-east-1.amazonaws.com/primera`,{
+        let req = await http.post(`https://whf162fdv4.execute-api.us-east-1.amazonaws.com/primera`, {
             pathImage: linkFotoPerfil
         })
         if (req.error) {
@@ -101,7 +103,7 @@ class Homeusuario extends Component {
         }
     }
 
-    Traducir=async()=>{
+    Traducir = async () => {
         if (this.state.lang === "") {
             alert("No hay idioma seleccionado")
         } else {
@@ -116,8 +118,11 @@ class Homeusuario extends Component {
         }
     }
 
-    LeerVoz=async()=>{
-        let req = await http.get(`${globals.enlace}/mascota/getMascotaDescriptionAudio/?MascotaId=1${this.state.idan}`)
+    LeerVoz = async () => {
+        let req = await http.get(`${globals.enlace}/mascota/getMascotaDescriptionAudio/?MascotaId=${this.state.idan}`)
+        this.setState({
+            audio: req.audio
+        })
         if (req.error) {
             alert(req.message)
         } else {
@@ -127,15 +132,15 @@ class Homeusuario extends Component {
         }
     }
 
-    Postularse=async()=>{
-        let req = await http.post(`${globals.enlace}/adopcion/createAdopcion`,{
+    Postularse = async () => {
+        let req = await http.post(`${globals.enlace}/adopcion/createAdopcion`, {
             IdUsuario: window.localStorage.getItem("id"),
             IdMascota: this.state.idan
         })
         alert(req.message)
     }
 
-    GetAdopcionesUsuario=async()=>{
+    GetAdopcionesUsuario = async () => {
         let req = await http.get(`${globals.enlace}/adopcion/getAdopcionByUsuarioId/?IdUsuario=${window.localStorage.getItem("id")}`)
         if (req.error) {
             alert(req.message)
@@ -146,8 +151,8 @@ class Homeusuario extends Component {
         }
     }
 
-    Notificado=async(idnotif)=>{
-        await http.put(`${globals.enlace}/adopcion/notificacionVistaUsuario`,{
+    Notificado = async (idnotif) => {
+        await http.put(`${globals.enlace}/adopcion/notificacionVistaUsuario`, {
             idAdopcion: idnotif
         })
         alert("Disfrute de su nuevo animal")
@@ -160,74 +165,82 @@ class Homeusuario extends Component {
                 <Navbar bg="light" expand="lg">
                     <Container>
                         <Navbar.Brand href="/homeusuario">
-                            <img alt="" src={this.state.fotoperfil}  width="30" height="30" className="d-inline-block align-top"/>{' '}
+                            <img alt="" src={this.state.fotoperfil} width="30" height="30" className="d-inline-block align-top" />{' '}
                             {window.localStorage.getItem("nombre")}
                         </Navbar.Brand>
-                        <Navbar.Toggle aria-controls="basic-navbar-nav"/>
+                        <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="me-auto">
-                            <Nav.Link onClick={()=>this.CerrarSesion()}>Cerrar Sesion</Nav.Link>
-                        </Nav>
+                            <Nav className="me-auto">
+                                <Nav.Link onClick={() => this.CerrarSesion()}>Cerrar Sesion</Nav.Link>
+                            </Nav>
                         </Navbar.Collapse>
                     </Container>
                 </Navbar>
 
                 <Tabs defaultActiveKey="AnimalesDisponibles" className="mb-3">
                     <Tab eventKey="AnimalesDisponibles" title="Animales Disponibles">
-                    <Carousel variant="dark">
-                        {
-                            this.state.animales.map((animal,index) => { 
-                                return <Carousel.Item key={index}>
-                                <img src={animal.linkFotoPerfil} alt="imagen" />
-                                <Carousel.Caption>
-                                    <h4>{animal.nombre}</h4>
-                                    <br/><Button onClick={()=>this.DetalleMascota(animal.id,animal.nombre,animal.raza,animal.tipo,animal.sexo,animal.estado,animal.linkFotoPerfil,animal.descripcion)}>Detalle</Button>
-                                </Carousel.Caption>
-                                </Carousel.Item>
-                            })
-                        }
-                    </Carousel>
+                        <Carousel variant="dark">
+                            {
+                                this.state.animales.map((animal, index) => {
+                                    return <Carousel.Item key={index}>
+                                        <img src={animal.linkFotoPerfil} alt="imagen" />
+                                        <Carousel.Caption>
+                                            <h4>{animal.nombre}</h4>
+                                            <br /><Button onClick={() => this.DetalleMascota(animal.id, animal.nombre, animal.raza, animal.tipo, animal.sexo, animal.estado, animal.linkFotoPerfil, animal.descripcion)}>Detalle</Button>
+                                        </Carousel.Caption>
+                                    </Carousel.Item>
+                                })
+                            }
+                        </Carousel>
 
-                    <Modal show={this.state.show} onHide={e => this.handleClose()}>
-                        <img src={this.state.linkfan} alt="imagen"/>
-                        <ListGroup variant="flush">
-                            <ListGroup.Item>
-                                {
-                                    this.state.tagsanimal.map((tag,index) => <Badge key={index} pill bg="primary">{tag}</Badge> )
-                                }
-                            </ListGroup.Item>
-                            <ListGroup.Item>Nombre: {this.state.nombrean}</ListGroup.Item>
-                            <ListGroup.Item>Raza: {this.state.razaan}</ListGroup.Item> 
-                            <ListGroup.Item>Tipo: {this.state.tipoan}</ListGroup.Item> 
-                            <ListGroup.Item>Sexo: {this.state.sexoan}</ListGroup.Item> 
-                            <ListGroup.Item>Descripcion: {this.state.descan}</ListGroup.Item>
-                            <ListGroup.Item>
-                                <Button onClick={()=>this.LeerVoz()}>Escuchar Descripcion</Button>
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                                <Form.Control as="select" name="lang" value={this.state.lang} onChange={this.handleChange}>
-                                    <option value=""></option>
-                                    <option value="en">Inglés</option>
-                                    <option value="de">Alemán</option>
-                                    <option value="pt">Portugués</option>
-                                    <option value="ja">Japonés</option>
-                                </Form.Control>
-                                <br/>
-                                <Button onClick={()=>this.Traducir()}>Traducir Descripcion</Button>
-                            </ListGroup.Item>
-                            <ListGroup.Item>Traduccion: {this.state.traduccion}</ListGroup.Item> 
-                        </ListGroup>
-                        <Modal.Footer>
-                            <Button variant="primary" onClick={()=>this.Postularse()}>Postular por Adopcion</Button>
-                            <Button variant="secondary" onClick={()=>this.handleClose()}>Cerrar</Button>
-                        </Modal.Footer>
-                    </Modal>
+                        <Modal show={this.state.show} onHide={e => this.handleClose()}>
+                            <img src={this.state.linkfan} alt="imagen" />
+                            <ListGroup variant="flush">
+                                <ListGroup.Item>
+                                    {
+                                        this.state.tagsanimal.map((tag, index) => <Badge key={index} pill bg="primary">{tag}</Badge>)
+                                    }
+                                </ListGroup.Item>
+                                <ListGroup.Item>Nombre: {this.state.nombrean}</ListGroup.Item>
+                                <ListGroup.Item>Raza: {this.state.razaan}</ListGroup.Item>
+                                <ListGroup.Item>Tipo: {this.state.tipoan}</ListGroup.Item>
+                                <ListGroup.Item>Sexo: {this.state.sexoan}</ListGroup.Item>
+                                <ListGroup.Item>Descripcion: {this.state.descan}</ListGroup.Item>
+                                <ListGroup.Item>
+                                    <Button onClick={() => this.LeerVoz()}>Escuchar Descripcion</Button>
+                                    {
+                                        this.state.audio == '' ?
+                                            null
+                                            :
+                                            <audio autoPlay controls>
+                                                <source src={`data:audio/mpeg;base64,${this.state.audio}`} />
+                                            </audio>
+                                    }
+                                </ListGroup.Item>
+                                <ListGroup.Item>
+                                    <Button onClick={() => this.Traducir()}>Traducir Descripcion</Button>
+                                    <br />
+                                    <Form.Control as="select" name="lang" value={this.state.lang} onChange={this.handleChange}>
+                                        <option value=""></option>
+                                        <option value="en">Inglés</option>
+                                        <option value="de">Alemán</option>
+                                        <option value="pt">Portugués</option>
+                                        <option value="ja">Japonés</option>
+                                    </Form.Control>
+                                </ListGroup.Item>
+                                <ListGroup.Item>Traduccion: {this.state.traduccion}</ListGroup.Item>
+                            </ListGroup>
+                            <Modal.Footer>
+                                <Button variant="primary" onClick={() => this.Postularse()}>Postular por Adopcion</Button>
+                                <Button variant="secondary" onClick={() => this.handleClose()}>Cerrar</Button>
+                            </Modal.Footer>
+                        </Modal>
 
                     </Tab>
                     <Tab eventKey="Notificaciones" title="Notificaciones">
                         <ListGroup>
                             {
-                                this.state.notificaciones.map((notif,index) => { 
+                                this.state.notificaciones.map((notif, index) => {
                                     if (!notif.notificado) {
                                         return <ListGroup.Item key={notif.id}>
                                             <ListGroup horizontal>
@@ -235,19 +248,19 @@ class Homeusuario extends Component {
                                                     Su solicitud de adopción de {notif.mascota.nombre} ha sido aprobada!
                                                 </ListGroup.Item>
                                                 <ListGroup.Item>
-                                                    <Button onClick={()=>this.Notificado(notif.id)}>Enterado</Button>
+                                                    <Button onClick={() => this.Notificado(notif.id)}>Enterado</Button>
                                                 </ListGroup.Item>
                                             </ListGroup>
                                         </ListGroup.Item>
-                                    }  else {
+                                    } else {
                                         return ""
-                                    } 
+                                    }
                                 })
                             }
                         </ListGroup>
                     </Tab>
                 </Tabs>
-            </div> 
+            </div>
         )
     }
 }
