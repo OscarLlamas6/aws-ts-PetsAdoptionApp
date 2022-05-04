@@ -44,9 +44,9 @@ Se tomó en cuenta un valor estimado de $15 dolares en AWS para el alojamiento y
 
 A la fecha se ha distribuido de la siguiente forma:
 
-![Captura de Pantalla 2022-05-03 a la(s) 22.53.23.png](Manual%20Te%CC%81cnico%20a7f14089ba7b448198c979826fdbd3db/Captura_de_Pantalla_2022-05-03_a_la(s)_22.53.23.png)
+![Captura de Pantalla 2022-05-03 a la(s) 22.53.23.png](img/Captura_de_Pantalla_2022-05-03_a_la(s)_22.53.23.png)
 
-![Captura de Pantalla 2022-05-03 a la(s) 23.04.28.png](Manual%20Te%CC%81cnico%20a7f14089ba7b448198c979826fdbd3db/Captura_de_Pantalla_2022-05-03_a_la(s)_23.04.28.png)
+![Captura de Pantalla 2022-05-03 a la(s) 23.04.28.png](img/Captura_de_Pantalla_2022-05-03_a_la(s)_23.04.28.png)
 
 ## Investigación de Servicios Utilizados
 
